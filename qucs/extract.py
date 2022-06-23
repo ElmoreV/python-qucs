@@ -11,7 +11,14 @@ class Val(array.ArrayType):
     dep=""
 
 
+
+
 def load_data(filename):
+    # Find all <tags/> in every line
+    # if the tag is there it can either be
+    # 'Qucs dataset'
+
+
     state="end"
     dat=Data()
     valdep=[]
@@ -24,9 +31,11 @@ def load_data(filename):
             if re.search("Qucs Dataset ",line):
                 continue
             if tag[0]=="/":
+                # The data has ended, reformat the data if necessary
                 state="end"
-                print("Number of Dimensions:",len(valdep))
+                # print("Number of Dimensions:",len(valdep))
                 if len(valdep)>1:
+                    # Reshape multidimensional data to an array
                     shape=[]
                     for i in range(len(valdep),0,-1):
                         shape.append(dat.__dict__[valdep[i-1]].len)
@@ -36,6 +45,8 @@ def load_data(filename):
             else:
                 state="start"
                 words=tag.split()
+                #for indep: ['indep','name of indep var','size']
+                # for dependent var: ['dep','name of dep var','depends on this indep var 1','and indep var 2','...']
                 type=words[0]
                 name=words[1].replace(".","_")
                 name=name.replace(",","")
@@ -48,9 +59,11 @@ def load_data(filename):
                     val=[]
                     valdep=words[2:]
         else:
+            # There is no tag: it is data
             if state=="start":
+                # Check for float or complex
                 if "j" in line:
-                    print(line)
+                    # Change 1+j1 to 1+1j
                     line=line.replace("j","")
                     line="%sj"%line.strip()
                     try:
